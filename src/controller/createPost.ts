@@ -163,15 +163,12 @@ export const createPost = async (req: Request, res: Response) => {
     const isDirectBool = toBoolean(isDirect, false);
     const locationCoordinates = parseLocation(location, latitude, longitude);
 
-    const userCheckQuery = "SELECT is_active FROM users WHERE user_id = $1";
+    const userCheckQuery = "SELECT user_id FROM users WHERE user_id = $1";
     const userCheckResult = await pool.query(userCheckQuery, [user_id]);
-    if (
-      userCheckResult.rows.length === 0 ||
-      !userCheckResult.rows[0].is_active
-    ) {
+    if (userCheckResult.rows.length === 0) {
       res.status(403).json({
         isSuccess: false,
-        message: "User is not active or does not exist",
+        message: "User does not exist",
       });
       return;
     }
