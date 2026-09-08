@@ -102,6 +102,16 @@ CREATE TABLE IF NOT EXISTS app_config (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS support (
+  id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+  email TEXT NOT NULL DEFAULT 'osoulappdeveloper@gmail.com',
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+INSERT INTO support (id, email)
+VALUES (1, 'osoulappdeveloper@gmail.com')
+ON CONFLICT (id) DO NOTHING;
+
 CREATE INDEX IF NOT EXISTS idx_posts_user_id ON posts(user_id);
 CREATE INDEX IF NOT EXISTS idx_posts_category_id ON posts(category_id);
 CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts(created_at DESC);

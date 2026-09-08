@@ -24,6 +24,10 @@ import {
   publicAppConfigRouter,
   protectedAppConfigRouter,
 } from "./router/appConfigRoute";
+import {
+  publicSupportRouter,
+  protectedSupportRouter,
+} from "./router/supportRoute";
 import deviceRoute from "./router/deviceRoute";
 
 const PORT = process.env.PORT || 3000;
@@ -102,6 +106,7 @@ app.use("/", publicPostsRouter);
 app.use("/", publicPostDetRouter);
 app.use("/", publicAdminRouter);
 app.use("/", publicAppConfigRouter);
+app.use("/", publicSupportRouter);
 
 // Protected routes (auth required)
 app.use("/", protect, CreateRoute);
@@ -109,6 +114,7 @@ app.use("/", protect, protectedPostsRouter);
 app.use("/", protect, protectedPostDetRouter);
 app.use("/", protect, protectedAdminRouter);
 app.use("/", protect, protectedAppConfigRouter);
+app.use("/", protect, protectedSupportRouter);
 
 const HOST = "0.0.0.0";
 
