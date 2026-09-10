@@ -33,6 +33,9 @@ import deviceRoute from "./router/deviceRoute";
 const PORT = process.env.PORT || 3000;
 
 const DEFAULT_CORS_ORIGINS = [
+  "https://ousulqatar.com",
+  "https://www.ousulqatar.com",
+  "https://osoulqatar.com",
   "https://www.osoulqatar.com",
   "https://amctag-admin-osoul.38f0fz.easypanel.host",
   "http://localhost:8082",
