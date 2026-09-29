@@ -467,6 +467,59 @@ const getPostById = async (postId: string) => {
   }
 };
 
+export const getAdminPost = async (req: Request, res: Response) => {
+  const postId = req.query.post_id;
+  if (!postId) {
+    res.status(400).json({ message: "post_id is required" });
+    return;
+  }
+
+  const query = `
+    SELECT p.*,
+      u.full_name_ar AS user_full_name_ar,
+      u.user_phone AS user_phone,
+      u.commercial_registeration AS commercial_reg,
+      u.company_name_ar AS company_name
+    FROM posts p
+    JOIN users u ON u.user_id = p.user_id
+    WHERE p.id = $1
+  `;
+
+  try {
+    const { rows } = await pool.query(query, [postId]);
+    if (rows.length === 0) {
+      res.status(404).json({ message: "Post not found" });
+      return;
+    }
+    const post = rows[0];
+    res.status(200).json({
+      id: post.id,
+      title: post.company_name_ar ?? "شخصي",
+      phone: post.user_phone,
+      created_at: post.created_at,
+      user_full_name_ar: post.user_full_name_ar,
+      commercial_reg: post.commercial_reg ?? "لا يوجد سجل تجاري",
+      categorey: post.category_id,
+      images: normalizeImageList(post.images),
+      caption: post.caption,
+      city_id: post.city_id,
+      sale_type_id: post.sale_type_id,
+      condition_id: post.condition_id,
+      is_direct: post.is_direct,
+      area: post.area,
+      building: post.building,
+      price: post.price,
+      rooms: post.rooms,
+      toilets: post.toilets,
+      land_area: post.land_area,
+      address: post.address,
+    });
+  } catch (error) {
+    console.error("Error fetching admin post:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const getAllPosts = async (req: Request, res: Response) => {
   const query = `SELECT p.*, u.full_name_ar AS user_full_name_ar, u.user_phone AS user_phone, u.commercial_registeration
    AS commercial_reg, u.company_name_ar AS

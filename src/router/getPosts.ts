@@ -7,6 +7,7 @@ import {
   filterPosts,
   savePost,
   getAllPosts,
+  getAdminPost,
   deletePost,
   getAllPostsPages,
 } from "../controller/userPosts";
@@ -24,4 +25,5 @@ protectedPostsRouter.post("/saved", getSaved);
 protectedPostsRouter.post("/listed", getList);
 protectedPostsRouter.post("/save-post", savePost);
 protectedPostsRouter.get("/get-posts", getAllPosts);
+protectedPostsRouter.get("/get-admin-post", getAdminPost);
 protectedPostsRouter.delete("/delete-post", deletePost);
