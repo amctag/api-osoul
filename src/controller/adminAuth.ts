@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { pool } from "../config/dp";
 import crypto from "crypto";
+import { getAuthActor } from "../utils/helper";
 
 export const RegAdmin = async (req: Request, res: Response) => {
   const { username, password } = req.body;
@@ -87,6 +88,55 @@ export const LoginAdmin = async (req: Request, res: Response) => {
       token,
     });
   } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const changeAdminPassword = async (req: Request, res: Response) => {
+  const { currentPassword, newPassword } = req.body ?? {};
+  const { adminId } = getAuthActor(req);
+
+  if (!adminId) {
+    res.status(401).json({ message: "Unauthorized" });
+    return;
+  }
+
+  if (
+    typeof currentPassword !== "string" ||
+    typeof newPassword !== "string" ||
+    !currentPassword ||
+    newPassword.length < 6
+  ) {
+    res.status(400).json({
+      message: "Current password is required and the new password must be at least 6 characters.",
+    });
+    return;
+  }
+
+  try {
+    const result = await pool.query("SELECT password FROM admins WHERE admin_id = $1", [
+      adminId,
+    ]);
+    if (result.rowCount === 0) {
+      res.status(404).json({ message: "Admin not found" });
+      return;
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, result.rows[0].password);
+    if (!isMatch) {
+      res.status(401).json({ message: "Current password is incorrect" });
+      return;
+    }
+
+    const hashedPass = await bcrypt.hash(newPassword, 10);
+    await pool.query("UPDATE admins SET password = $1 WHERE admin_id = $2", [
+      hashedPass,
+      adminId,
+    ]);
+
+    res.status(200).json({ message: "Password updated" });
+  } catch (error) {
+    console.error("Change admin password error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
