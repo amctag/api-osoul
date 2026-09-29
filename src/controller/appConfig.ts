@@ -119,15 +119,29 @@ async function ensureAnnouncementsTable() {
   `);
 }
 
-export const listAnnouncements = async (_req: Request, res: Response) => {
+export const listAnnouncements = async (req: Request, res: Response) => {
+  const limit = 50;
+  const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10) || 1);
+  const offset = (page - 1) * limit;
+
   try {
     await ensureAnnouncementsTable();
+    const countResult = await pool.query(`SELECT COUNT(*)::int AS total FROM announcements`);
+    const total = countResult.rows[0]?.total ?? 0;
     const { rows } = await pool.query(
       `SELECT id, title, body, recipient_count, created_at
        FROM announcements
-       ORDER BY created_at DESC`
+       ORDER BY created_at DESC
+       LIMIT $1 OFFSET $2`,
+      [limit, offset]
     );
-    res.status(200).json(rows);
+    res.status(200).json({
+      page,
+      limit,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+      items: rows,
+    });
   } catch (error) {
     console.error("Error loading announcements:", error);
     res.status(500).json({ message: "Failed to load announcements" });
