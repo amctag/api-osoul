@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { pool } from "../config/dp";
 import {
   loadAppVersionSettings,
   saveAppVersionSettings,
@@ -106,6 +107,33 @@ function parseAnnouncementBody(body: Request["body"]): AnnouncementPayload | nul
   };
 }
 
+async function ensureAnnouncementsTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS announcements (
+      id SERIAL PRIMARY KEY,
+      title TEXT NOT NULL,
+      body TEXT NOT NULL,
+      recipient_count INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+}
+
+export const listAnnouncements = async (_req: Request, res: Response) => {
+  try {
+    await ensureAnnouncementsTable();
+    const { rows } = await pool.query(
+      `SELECT id, title, body, recipient_count, created_at
+       FROM announcements
+       ORDER BY created_at DESC`
+    );
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error("Error loading announcements:", error);
+    res.status(500).json({ message: "Failed to load announcements" });
+  }
+};
+
 export const sendAnnouncement = async (req: Request, res: Response) => {
   const payload = parseAnnouncementBody(req.body);
 
@@ -128,6 +156,12 @@ export const sendAnnouncement = async (req: Request, res: Response) => {
     if (tokens.length > 0) {
       queueAnnouncementNotifications(payload);
     }
+
+    await ensureAnnouncementsTable();
+    await pool.query(
+      `INSERT INTO announcements (title, body, recipient_count) VALUES ($1, $2, $3)`,
+      [payload.title, payload.body, tokens.length]
+    );
 
     res.status(200).json({
       message:

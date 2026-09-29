@@ -3,6 +3,7 @@ import {
   getAppVersion,
   getAppVersionSettings,
   sendAnnouncement,
+  listAnnouncements,
   updateAppVersionSettings,
 } from "../controller/appConfig";
 
@@ -14,3 +15,4 @@ publicAppConfigRouter.get("/app-version", getAppVersion);
 protectedAppConfigRouter.get("/app-version-settings", getAppVersionSettings);
 protectedAppConfigRouter.put("/app-version-settings", updateAppVersionSettings);
 protectedAppConfigRouter.post("/send-announcement", sendAnnouncement);
+protectedAppConfigRouter.get("/announcements", listAnnouncements);
